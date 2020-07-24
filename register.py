@@ -394,18 +394,13 @@ class VoiceWindow(QMainWindow):
         self.ui = Ui_VoiceWindow()
         self.ui.setupUi(self)
         self.mic = []
-        self.micList = {}
         p1 = pyaudio.PyAudio()
         info = p1.get_host_api_info_by_index(0)
         numdevices = info.get('deviceCount')
         self.ui.DeviceBox.setDuplicatesEnabled(False)
         for i in range(0, numdevices):
-            name = p1.get_device_info_by_host_api_device_index(0, i).get('name')
-            if "USB Audio" in name or "default" in name:
-                self.mic.append(name)
-                self.ui.DeviceBox.addItem(name)
-                self.micList[name] = i
-        self.device = self.micList["default"]
+            self.mic.append(p1.get_device_info_by_host_api_device_index(0, i).get('name'))
+            self.ui.DeviceBox.addItem(p1.get_device_info_by_host_api_device_index(0, i).get('name'))
         p1.terminate()
         self.ID=""
         self.CHUNK = 512
@@ -508,10 +503,7 @@ class VoiceWindow(QMainWindow):
         numdevices = info.get('deviceCount')
         self.ui.DeviceBox.setDuplicatesEnabled(False)
         for i in range(0, numdevices):
-            name = p1.get_device_info_by_host_api_device_index(0, i).get('name')
-            if "USB Audio" in name or "default" in name:
-                self.micList[name] = i
-                mic1.append(name)
+            mic1.append(p1.get_device_info_by_host_api_device_index(0, i).get('name'))
         if mic1 != self.mic:
             print(True)
             self.ui.DeviceBox.clear()
@@ -546,8 +538,7 @@ class VoiceWindow(QMainWindow):
             self.ui.play_bt.setEnabled(False)
             self.ui.done_bt.setEnabled(False)
         
-        self.ui.status_lb.setText(f"{str(self.ui.DeviceBox.currentText())} {self.micList[self.ui.DeviceBox.currentText()]}")
-        self.device = self.micList[self.ui.DeviceBox.currentText()]
+        self.ui.status_lb.setText(f"{str(self.ui.DeviceBox.currentText())} {self.ui.DeviceBox.currentIndex()}")
         # Record voice 
         if (self.count>0) & (self.count<=4):
             p = pyaudio.PyAudio()
@@ -557,7 +548,7 @@ class VoiceWindow(QMainWindow):
                             rate=self.RATE,
                             input=True,
                             frames_per_buffer=self.CHUNK,
-                            input_device_index=11)
+                            input_device_index=self.ui.DeviceBox.currentIndex())
 
             self.ui.status_lb.setText(f"Status: * recording {5-self.count}")
             # 1 record turn will not be used 
