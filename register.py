@@ -407,7 +407,7 @@ class VoiceWindow(QMainWindow):
         self.FORMAT = pyaudio.paInt16
         self.CHANNELS = 1
         self.RATE = 16000
-        self.RECORD_SECONDS = 2
+        self.RECORD_SECONDS = 3
         self.player = QMediaPlayer()
         self.count = 0
         self.volume = 0
@@ -510,10 +510,9 @@ class VoiceWindow(QMainWindow):
             self.ui.DeviceBox.addItems(mic1)
             self.mic = mic1
         p1.terminate()
-        # print(self.ui.DeviceBox.currentIndex())
-        # with open(f'data/ID.txt', 'r') as f:
-        #     self.ID = f.read()
-        self.ID = 1752041
+        print(self.ui.DeviceBox.currentIndex())
+        with open(f'data/ID.txt', 'r') as f:
+            self.ID = f.read()
         # If process done, save in menubar will be enabled
         if os.path.exists(f'data/{self.ID}/voice/3.wav'):
             self.ui.save_act.setEnabled(True)
@@ -715,8 +714,8 @@ class OpenWindow(QMainWindow):
 class Controller:
 
     def __init__(self):
-        # self.input = InputWindow()
-        # self.face = FaceWindow()
+        self.input = InputWindow()
+        self.face = FaceWindow()
         self.voice = VoiceWindow()
         self.open = OpenWindow()
 
@@ -739,11 +738,11 @@ class Controller:
         self.face.show()
 
     def voice_win(self):
-        # self.voice.switch_window1.connect(self.face_win)
-        # self.voice.switch_window2.connect(self.input_win)
+        self.voice.switch_window1.connect(self.face_win)
+        self.voice.switch_window2.connect(self.input_win)
         self.voice.switch_openWindow.connect(self.open_win)
-        # self.face.close()
-        # self.input.close()
+        self.face.close()
+        self.input.close()
         self.open.close()
         self.voice.show()
 
@@ -754,8 +753,7 @@ class Controller:
 def main():
     app = QApplication(sys.argv)
     controller = Controller()
-    # controller.input_win()
-    controller.voice_win()
+    controller.input_win()
     sys.exit(app.exec_())
 
 
