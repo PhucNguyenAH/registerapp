@@ -394,13 +394,18 @@ class VoiceWindow(QMainWindow):
         self.ui = Ui_VoiceWindow()
         self.ui.setupUi(self)
         self.mic = []
+        self.micList = {}
         p1 = pyaudio.PyAudio()
         info = p1.get_host_api_info_by_index(0)
         numdevices = info.get('deviceCount')
         self.ui.DeviceBox.setDuplicatesEnabled(False)
         for i in range(0, numdevices):
-            self.mic.append(p1.get_device_info_by_host_api_device_index(0, i).get('name'))
-            self.ui.DeviceBox.addItem(p1.get_device_info_by_host_api_device_index(0, i).get('name'))
+            name = p1.get_device_info_by_host_api_device_index(0, i).get('name')
+            if "USB Audio" in name or "default" in name:
+                self.mic.append(name)
+                self.ui.DeviceBox.addItem(name)
+                self.micList[name] = i
+        self.device = self.micList["default"]
         p1.terminate()
         self.ID=""
         self.CHUNK = 512
@@ -503,16 +508,20 @@ class VoiceWindow(QMainWindow):
         numdevices = info.get('deviceCount')
         self.ui.DeviceBox.setDuplicatesEnabled(False)
         for i in range(0, numdevices):
-            mic1.append(p1.get_device_info_by_host_api_device_index(0, i).get('name'))
+            name = p1.get_device_info_by_host_api_device_index(0, i).get('name')
+            if "USB Audio" in name or "default" in name:
+                self.micList[name] = i
+                mic1.append(name)
         if mic1 != self.mic:
             print(True)
             self.ui.DeviceBox.clear()
             self.ui.DeviceBox.addItems(mic1)
             self.mic = mic1
         p1.terminate()
-        print(self.ui.DeviceBox.currentIndex())
-        with open(f'data/ID.txt', 'r') as f:
-            self.ID = f.read()
+        # print(self.ui.DeviceBox.currentIndex())
+        # with open(f'data/ID.txt', 'r') as f:
+        #     self.ID = f.read()
+        self.ID = 1752041
         # If process done, save in menubar will be enabled
         if os.path.exists(f'data/{self.ID}/voice/3.wav'):
             self.ui.save_act.setEnabled(True)
@@ -536,7 +545,9 @@ class VoiceWindow(QMainWindow):
             self.ui.record3_cb.setChecked(False)
             self.ui.play_bt.setEnabled(False)
             self.ui.done_bt.setEnabled(False)
-
+        
+        self.ui.status_lb.setText(f"{str(self.ui.DeviceBox.currentText())} {self.micList[self.ui.DeviceBox.currentText()]}")
+        self.device = self.micList[self.ui.DeviceBox.currentText()]
         # Record voice 
         if (self.count>0) & (self.count<=4):
             p = pyaudio.PyAudio()
@@ -546,7 +557,7 @@ class VoiceWindow(QMainWindow):
                             rate=self.RATE,
                             input=True,
                             frames_per_buffer=self.CHUNK,
-                            input_device_index=self.ui.DeviceBox.currentIndex())
+                            input_device_index=11)
 
             self.ui.status_lb.setText(f"Status: * recording {5-self.count}")
             # 1 record turn will not be used 
@@ -584,9 +595,9 @@ class VoiceWindow(QMainWindow):
                 with open(f'data/{self.ID}/voice/{self.ID}_encoded_wav.pickle', 'wb') as handle:
                     pickle.dump(self.data_encode, handle, protocol=pickle.HIGHEST_PROTOCOL)
             self.count -= 1
-        if self.count == 0:
-            # Status of not recording
-            self.ui.status_lb.setText("Status: Click record")
+        # if self.count == 0:
+        #     # Status of not recording
+        #     self.ui.status_lb.setText("Status: Click record")
 
         if self.count == 5:
             # Status of begin recording
@@ -713,8 +724,8 @@ class OpenWindow(QMainWindow):
 class Controller:
 
     def __init__(self):
-        self.input = InputWindow()
-        self.face = FaceWindow()
+        # self.input = InputWindow()
+        # self.face = FaceWindow()
         self.voice = VoiceWindow()
         self.open = OpenWindow()
 
@@ -737,11 +748,11 @@ class Controller:
         self.face.show()
 
     def voice_win(self):
-        self.voice.switch_window1.connect(self.face_win)
-        self.voice.switch_window2.connect(self.input_win)
+        # self.voice.switch_window1.connect(self.face_win)
+        # self.voice.switch_window2.connect(self.input_win)
         self.voice.switch_openWindow.connect(self.open_win)
-        self.face.close()
-        self.input.close()
+        # self.face.close()
+        # self.input.close()
         self.open.close()
         self.voice.show()
 
@@ -752,7 +763,8 @@ class Controller:
 def main():
     app = QApplication(sys.argv)
     controller = Controller()
-    controller.input_win()
+    # controller.input_win()
+    controller.voice_win()
     sys.exit(app.exec_())
 
 
