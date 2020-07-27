@@ -537,7 +537,6 @@ class VoiceWindow(QMainWindow):
             self.ui.play_bt.setEnabled(False)
             self.ui.done_bt.setEnabled(False)
         
-        self.ui.status_lb.setText(f"{str(self.ui.DeviceBox.currentText())} {self.ui.DeviceBox.currentIndex()}")
         # Record voice 
         if (self.count>0) & (self.count<=4):
             p = pyaudio.PyAudio()
@@ -585,9 +584,9 @@ class VoiceWindow(QMainWindow):
                 with open(f'data/{self.ID}/voice/{self.ID}_encoded_wav.pickle', 'wb') as handle:
                     pickle.dump(self.data_encode, handle, protocol=pickle.HIGHEST_PROTOCOL)
             self.count -= 1
-        # if self.count == 0:
-        #     # Status of not recording
-        #     self.ui.status_lb.setText("Status: Click record")
+        if self.count == 0:
+            # Status of not recording
+            self.ui.status_lb.setText("Status: Click record")
 
         if self.count == 5:
             # Status of begin recording
