@@ -18,6 +18,7 @@ import wave
 import pickle
 import tkinter as tk
 import traceback
+import csv
 sensitivity = 0.7
 model_file = './computer.umdl'
 detection = snowboydecoder.HotwordDetector(model_file, sensitivity=sensitivity)
@@ -116,7 +117,9 @@ class JetsonWindow(QMainWindow):
         self.threadpool = QThreadPool()
         print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
         
-        self.server_url = 'http://191.16.32.142:5001/'
+        # self.server_url = 'http://192.168.1.3:5001/'
+
+        
         self.p = pyaudio.PyAudio()
         self.stream = self.p.open(
                         rate=16000,
@@ -128,8 +131,17 @@ class JetsonWindow(QMainWindow):
                         stream_callback = self.callback
         )
         self.stream.start_stream()
+        self.list = []
+        with open('DATA.csv', newline='') as f:
+            reader = list(csv.reader(f))
+            for data in reader:
+                self.list.append(data[0])
+        self.server_url = self.list.pop()
+        self.list.append('NOT IDENTIFIED')
+        print(f"Server url: {self.server_url}")
+        print(f"ID List: {self.list}")
 
-        self.list = ['1752015', '1752259', '1752041', 'NOT INDENTIFIED']
+        # self.list = ['1752015', '1752259', '1752041', 'NOT INDENTIFIED']
 
         # create a timer
         self.timer = QTimer()
